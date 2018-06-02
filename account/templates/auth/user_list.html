@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<BR>
+{% for user in user_list %}
+  <a href="/account/user/{{user.id}}/update/">修改</a>
+  <a href="/account/user/{{user.id}}">{{user.username}}</a>
+  <BR>
+{% endfor %}
+{% endblock %}

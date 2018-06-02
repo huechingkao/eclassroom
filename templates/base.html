@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h1>線上教室</h1>
+    {% if user.is_authenticated %}
+    {% if user.is_superuser %}
+    <a href="/account/user">所有帳號</a>
+    {% endif %}
+    {{ user.first_name }} 
+    <a href="/account/logout">登出</a>
+    {% else %}
+    <a href="/account/user/create">註冊新帳號</a>  
+    <a href="/account/login">登入</a>
+    {% endif %} 
+    <hr>
+{% block content %}
+{% endblock %}        
+</body>
+</html>
