@@ -22,7 +22,4 @@ class Enroll(models.Model):
     @property        
     def student(self):
         return User.objects.get(id=self.student_id)      
-
-    class Meta:
-        unique_together = ('student_id', 'classroom_id',)		
     
