@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from django.shortcuts import render
 from django.views import generic
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -13,24 +13,11 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, RedirectView
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, UserUpdateForm, UserPasswordForm, UserTeacherForm
 from django.shortcuts import redirect
-
-class LoginRequiredMixin(object):
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        return super(LoginRequiredMixin, self).dispatch(
-            self, request, *args, **kwargs)
-
-class StaffRequiredMixin(object):
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return redirect("/account/login")
-        return super(StaffRequiredMixin, self).dispatch(request,
-            *args, **kwargs)
-      
-      
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+       
 class SuperUserRequiredMixin(object):
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -84,6 +71,7 @@ class LogoutView(RedirectView):
 class UserListView(SuperUserRequiredMixin, generic.ListView):
     model = User
     ordering = ['-id']
+    paginate_by = 3   
 
 class UserDetailView(LoginRequiredMixin, generic.DetailView):
     model = User
@@ -101,9 +89,45 @@ class UserCreate(CreateView):
         new_user.save()  
         return valid
     
-class UserUpdate(LoginRequiredMixin, UpdateView):
+class UserUpdate(SuperUserRequiredMixin, UpdateView):
     model = User
-    fields = ['first_name', 'last_name']   
-    success_url = "/"   
+    form_class = UserUpdateForm
+    success_url = "/account/user"   
     template_name = 'form.html'
     
+class UserPasswordUpdate(SuperUserRequiredMixin, UpdateView):
+    model = User
+    form_class = UserPasswordForm
+    success_url = "/account/user"   
+    template_name = 'form.html'
+    
+    def form_valid(self, form):
+        valid = super(UserPasswordUpdate, self).form_valid(form)
+        new_user = form.save(commit=False)
+        new_user.set_password(form.cleaned_data.get('password'))
+        new_user.save()  
+        return valid    
+
+class UserTeacherView(SuperUserRequiredMixin, FormView):
+    success_url = '/account/user'
+    form_class = UserTeacherForm
+    template_name = "form.html"
+      
+    def form_valid(self, form):
+        valid = super(UserTeacherView, self).form_valid(form)
+        user = User.objects.get(id=self.kwargs['pk'])
+        try :
+            group = Group.objects.get(name="teacher")	
+        except ObjectDoesNotExist :
+            group = Group(name="teacher")
+            group.save()        
+        if form.cleaned_data.get('teacher') :
+            group.user_set.add(user)
+        else: 
+            group.user_set.remove(user)
+        return valid  
+      
+    def get_form_kwargs(self):
+        kwargs = super(UserTeacherView, self).get_form_kwargs()
+        kwargs.update({'pk': self.kwargs['pk']})
+        return kwargs

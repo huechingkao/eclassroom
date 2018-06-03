@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 class UserRegistrationForm(forms.ModelForm): 
     error_messages = {
@@ -51,6 +51,36 @@ class UserRegistrationForm(forms.ModelForm):
         self.fields['password'].label = "密碼"
         self.fields['password2'].label = "再次確認密碼"    
         
+class UserUpdateForm(forms.ModelForm): 
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
 
+    def __init__(self, *args, **kwargs):
+        super(UserUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['username'].label = "帳號"
+        self.fields['first_name'].label = "真實姓名"
+        self.fields['last_name'].label = "學校名稱"
+        self.fields['email'].label = "電子郵件"         
 
- 
+class UserPasswordForm(forms.ModelForm): 
+    password = forms.CharField(label='Password', widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('password',)
+        
+    def __init__(self, *args, **kwargs):
+        super(UserPasswordForm, self).__init__(*args, **kwargs)  
+        self.fields['password'].label = "密碼"
+  
+class UserTeacherForm(forms.Form):    
+    teacher = forms.BooleanField(required=False)
+       
+    def __init__(self, *args, **kwargs):
+        user_id = kwargs.pop('pk', None)
+        super(UserTeacherForm, self).__init__(*args, **kwargs)  
+        self.fields['teacher'].label = "教師"  
+        self.fields['teacher'].initial = User.objects.get(id=user_id).groups.filter(name='teacher').exists()
+
+   
