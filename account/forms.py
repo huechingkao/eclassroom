@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from django import forms
 from django.contrib.auth.models import User, Group
+from account.models import Message, MessagePoll, MessageContent
 
 class UserRegistrationForm(forms.ModelForm): 
     error_messages = {
@@ -82,5 +83,20 @@ class UserTeacherForm(forms.Form):
         super(UserTeacherForm, self).__init__(*args, **kwargs)  
         self.fields['teacher'].label = "教師"  
         self.fields['teacher'].initial = User.objects.get(id=user_id).groups.filter(name='teacher').exists()
+
+# 新增一個私訊表單
+class LineForm(forms.ModelForm):
+        class Meta:
+           model = Message
+           fields = ['title','content',]
+        
+        def __init__(self, *args, **kwargs):
+            super(LineForm, self).__init__(*args, **kwargs)
+            self.fields['title'].label = "主旨"
+            self.fields['title'].widget.attrs['size'] = 50
+            self.fields['content'].label = "內容"
+            self.fields['content'].required = False            
+            self.fields['content'].widget.attrs['cols'] = 50
+            self.fields['content'].widget.attrs['rows'] = 20          
 
    

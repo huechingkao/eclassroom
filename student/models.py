@@ -1,10 +1,8 @@
 # -*- coding: UTF-8 -*-
-from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from teacher.models import Classroom
 from django.utils import timezone
-from django.utils.encoding import force_text
 
 # 學生選課資料
 class Enroll(models.Model):
