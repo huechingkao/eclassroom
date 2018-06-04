@@ -6,6 +6,7 @@
 <body>
     <h1>線上教室</h1>
     {% if user.is_authenticated %}
+    <a href="/account/dashboard">訊息</a>   
     <a href="/student/classroom">班級</a>  
     {% if user|teacher_group %}
     <a href="/teacher/classroom">教師</a>

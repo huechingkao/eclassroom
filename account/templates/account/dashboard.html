@@ -2,11 +2,13 @@
 {% load tag %}
 {% block content %}
 <table>
-{% for messagepoll, message in queryset %}
+{% for messagepoll in messagepoll_list %}
      <tr>
-       <td>{{messagepoll.message_type}})</td>
-       <td><a href="/account/line/{{message.id}}">{{message.title}}</a></td>
+       <td>{{messagepoll.message.publication_date}}</td>
+       <td><a href="/account/line/{{messagepoll.message_id}}">{{messagepoll.message.title}}</a></td>
      </tr>
 {% endfor %}
 </table>
+    {% load pagination %}
+    {% get_pagination %}
 {% endblock %}

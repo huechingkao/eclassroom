@@ -1,5 +1,7 @@
 from django import template
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from account.models import MessagePoll
 
 register = template.Library()
 
@@ -20,20 +22,14 @@ def realname(user_id):
     try: 
         user = User.objects.get(id=user_id)
         return user.first_name
-    except ObjectDoesNotExist:
+    except :
         pass
-        return ""
-      
-@register.filter()
-def is_pic(title):   
-    if title[-3:].upper() == "PNG":
-        return True
-    if title[-3:].upper() == "JPG":
-        return True   
-    if title[-3:].upper() == "GIF":
-        return True            
-    return False
-
-@register.filter(name='abs_filter')
-def abs_filter(value):
-    return abs(value)
+    return ""
+    
+@register.filter(takes_context=True)
+def read_already(message_id, user_id):
+    try:
+        messagepoll = MessagePoll.objects.get(message_id=message_id, reader_id=user_id)
+    except ObjectDoesNotExist:
+        messagepoll = MessagePoll()
+    return messagepoll.read  
