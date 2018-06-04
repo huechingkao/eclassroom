@@ -8,4 +8,5 @@ urlpatterns = [
     path('classroom/', views.ClassroomListView.as_view()),
     path('classroom/create/', views.ClassroomCreate.as_view()),    
     path('classroom/<int:pk>/update/', views.ClassroomUpdate.as_view()),  
+    path('announce/<int:classroom_id>/create/', views.AnnounceCreate.as_view()),      
 ]

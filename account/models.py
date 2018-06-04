@@ -13,7 +13,7 @@ class Message(models.Model):
     title = models.CharField(max_length=250)
     content = models.TextField(default='')
     url = models.CharField(max_length=250)
-    time = models.DateTimeField(auto_now_add=True)
+    publication_date = models.DateTimeField(auto_now_add=True)
 			
 # 訊息附件
 class MessageContent(models.Model):

@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import IntegrityError
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class ClassroomListView(generic.ListView):
     model = Classroom
