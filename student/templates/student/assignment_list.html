@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load tag %}
+{% block content %}
+<table>
+  <tr>
+  <th>作業名稱</th>    
+  <th>功能</th>       
+  </tr>
+{% for assignment in assignment_list %}
+  <tr>
+  <td>{{assignment.title}}</td>
+  <td>
+    {% if assignment.id|work_exists:user.id %}
+    <a href="/student/assignment/work/{{assignment.id|work_id:user.id}}/update">修改</a>
+    {% else %}
+    <a href="/student/assignment/{{assignment.id}}/create">繳交</a>    
+    {% endif %}
+    <a href="/student/assignment/memo/{{classroom_id}}/{{assignment.id}}/">心得</a>    
+  </td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

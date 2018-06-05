@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load tag %}
+{% block content %}
+<table>
+  <tr>
+  <th>座號</th>    
+  <th>姓名</th>
+  <th>時間</th>  
+  <th>分數</th>      
+  </tr>
+{% for enroll, work in scores %}
+  <tr>
+  <td>{{enroll.seat}}</td>
+  <td>{{enroll.student.first_name}}</td>
+    {% if work %}
+    <td><a href="/teacher/assignment/scoring/{{assignment_id}}/{{work.id}}/update">{{work.publication_date}}</a></td>
+  <td>{{work.score}}</td>
+    {% endif %}
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

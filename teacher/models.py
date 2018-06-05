@@ -15,4 +15,8 @@ class Classroom(models.Model):
     def teacher(self):
         return User.objects.get(id=self.teacher_id)  
         
- 
+#作業
+class Assignment(models.Model):
+    title = models.CharField(max_length=250, verbose_name='作業名稱')    
+    classroom_id = models.IntegerField(default=0)
+    publication_date = models.DateTimeField(auto_now_add=True)

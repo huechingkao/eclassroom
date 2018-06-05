@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load tag %}
+{% block content %}
+<a href="/teacher/assignment/{{classroom_id}}/create">新增作業</a>
+<table>
+  <tr>
+  <th>作業名稱</th>    
+  <th>功能</th>       
+  </tr>
+{% for assignment in assignment_list %}
+  <tr>
+  <td>{{assignment.title}}</td>
+  <td><a href="/teacher/assignment/scoring/{{assignment.id}}">評分</a></td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

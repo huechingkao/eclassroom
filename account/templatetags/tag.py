@@ -2,6 +2,7 @@ from django import template
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from account.models import MessagePoll
+from student.models import Work
 
 register = template.Library()
 
@@ -33,3 +34,19 @@ def read_already(message_id, user_id):
     except ObjectDoesNotExist:
         messagepoll = MessagePoll()
     return messagepoll.read  
+  
+@register.filter(takes_context=True)
+def work_exists(assignment_id, user_id):
+    works = Work.objects.filter(assignment_id=assignment_id, student_id=user_id)
+    if works.exists() :
+        return True
+    else:
+        return False
+
+@register.filter(takes_context=True)
+def work_id(assignment_id, user_id):
+    works = Work.objects.filter(assignment_id=assignment_id, student_id=user_id).order_by("-id")
+    if works.exists() :
+        return works[0].id
+    else:
+        return 0
