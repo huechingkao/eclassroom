@@ -12,5 +12,6 @@ urlpatterns = [
     path('assignment/<int:classroom_id>/', views.AssignmentList.as_view()),  
     path('assignment/<int:classroom_id>/create/', views.AssignmentCreate.as_view()), 
     path('assignment/scoring/<int:assignment_id>/', views.ScoreList.as_view()),  
-    path('assignment/scoring/<int:assignment_id>/<int:pk>/update/', views.ScoreUpdate.as_view()),   
+    path('assignment/scoring/<int:assignment_id>/<int:pk>/update/', views.ScoreUpdate.as_view()), 
+    path('questionary/<int:classroom_id>', views.QuestionaryView.as_view()),  
 ]

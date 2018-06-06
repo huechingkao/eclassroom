@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth.models import User, Group
 from account.models import Message, MessagePoll, MessageContent
+from account.models import Questionary
 
 class UserRegistrationForm(forms.ModelForm): 
     error_messages = {
@@ -86,17 +87,39 @@ class UserTeacherForm(forms.Form):
 
 # 新增一個私訊表單
 class LineForm(forms.ModelForm):
-        class Meta:
-           model = Message
-           fields = ['title','content',]
-        
-        def __init__(self, *args, **kwargs):
-            super(LineForm, self).__init__(*args, **kwargs)
-            self.fields['title'].label = "主旨"
-            self.fields['title'].widget.attrs['size'] = 50
-            self.fields['content'].label = "內容"
-            self.fields['content'].required = False            
-            self.fields['content'].widget.attrs['cols'] = 50
-            self.fields['content'].widget.attrs['rows'] = 20          
+    class Meta:
+       model = Message
+       fields = ['title','content',]
+       
+    def __init__(self, *args, **kwargs):
+        super(LineForm, self).__init__(*args, **kwargs)
+        self.fields['title'].label = "主旨"
+        self.fields['title'].widget.attrs['size'] = 50
+        self.fields['content'].label = "內容"
+        self.fields['content'].required = False            
+        self.fields['content'].widget.attrs['cols'] = 50
+        self.fields['content'].widget.attrs['rows'] = 20          
 
-   
+# 新增一個問卷表單
+class QuestionaryForm(forms.ModelForm):
+    CHOICES=[(4,'非常同意'),
+             (3,'同意'),
+             (2,'不同意'),
+             (1,'非常不同意')]  
+    
+    q1 = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())   
+    q2 = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())   
+    q3 = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())       
+    
+    class Meta:
+        model = Questionary
+        fields = ['q1','q2', 'q3', 't1', 't2']
+        
+    def __init__(self, *args, **kwargs):
+        super(QuestionaryForm, self).__init__(*args, **kwargs)         
+        self.fields['t1'].widget.attrs['cols'] = 80
+        self.fields['t1'].widget.attrs['rows'] = 5         
+        self.fields['t2'].widget.attrs['cols'] = 80
+        self.fields['t2'].widget.attrs['rows'] = 5           
+
+      

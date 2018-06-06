@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load tag %}
+{% block content %}
+<h2>{{user_id|realname}}的積分記錄</h2>
+<table>
+  <tr>
+  <th>時間</th>
+  <th>項目</th>        
+  </tr>
+{% for point in pointhistory_list %}
+  <tr>
+  <td>{{point.publication_date}}</td>
+  <td>{{point.message}}</td>       
+  </tr>
+{% endfor %}
+</table>
+    {% load pagination %}
+    {% get_pagination %}
+{% endblock %}

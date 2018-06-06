@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% load tag %}
+{% block content %}
+<h2>請依據題意在下列四個選項中，選填一個最適當的選項</h2>
+         <form action="" enctype="multipart/form-data"  method="post">
+            <table class="table">
+              <tr>
+                <td>1.我很崇拜程式設計很厲害的人</td>
+                <td>{{form.q1}}</td>
+              </tr>
+              <tr>
+                <td>2.我對學習程式設計感到有興趣</td>
+                <td>{{form.q2}}</td>                 
+              </tr>
+              <tr>
+                <td>3.學好程式設計在現代社會是很重要的</td>
+                <td>{{form.q3}}</td>                 
+              </tr>
+              <tr><td colspan=2>4.請列舉曾經學過的程式語言</td></tr>
+              <tr><td colspan=2>{{form.t1}}</td></tr>
+              <tr><td colspan=2>5.請簡述對本課程的期望</td></tr>
+              <tr><td colspan=2>{{form.t2}}</td></tr>  
+            <tr><td></td><td><input id="submit" type="submit" value="送出"><td</tr>
+            </table>
+            {% csrf_token %}
+
+        </form>
+{% endblock %}

@@ -19,6 +19,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from student.models import Enroll
 from account.models import Message, MessagePoll, MessageContent
+from account.models import Profile, PointHistory
+from account.models import Questionary
+from account.forms import QuestionaryForm
 
 # 判斷是否為本班同學
 def is_classmate(user_id, classroom_id):
@@ -40,7 +43,7 @@ class SuperUserRequiredMixin(object):
         return super(SuperUserRequiredMixin, self).dispatch(request,
             *args, **kwargs)
 
-class LoginView(FormView):
+class Login(FormView):
     success_url = '/'
     form_class = AuthenticationForm
     redirect_field_name = REDIRECT_FIELD_NAME
@@ -53,7 +56,7 @@ class LoginView(FormView):
         # Sets a test cookie to make sure the user has cookies enabled
         request.session.set_test_cookie()
 
-        return super(LoginView, self).dispatch(request, *args, **kwargs)
+        return super(Login, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         auth_login(self.request, form.get_user())
@@ -67,7 +70,7 @@ class LoginView(FormView):
         if self.request.session.test_cookie_worked():
             self.request.session.delete_test_cookie()
 
-        return super(LoginView, self).form_valid(form)
+        return super(Login, self).form_valid(form)
 
     def get_success_url(self):
         redirect_to = self.request.GET.get(self.redirect_field_name)
@@ -75,20 +78,31 @@ class LoginView(FormView):
             redirect_to = self.success_url
         return redirect_to
 
-class LogoutView(RedirectView):
+class Logout(RedirectView):
     url = '/account/login/'
 
     def get(self, request, *args, **kwargs):
         auth_logout(request)
-        return super(LogoutView, self).get(request, *args, **kwargs)
+        return super(Logout, self).get(request, *args, **kwargs)
       
-class UserListView(SuperUserRequiredMixin, generic.ListView):
+class UserList(SuperUserRequiredMixin, generic.ListView):
     model = User
     ordering = ['-id']
     paginate_by = 3   
 
-class UserDetailView(LoginRequiredMixin, generic.DetailView):
+class UserDetail(LoginRequiredMixin, generic.DetailView):
     model = User
+    
+    def get_context_data(self, **kwargs):
+        context = super(UserDetail, self).get_context_data(**kwargs)
+        user = User.objects.get(id=self.kwargs['pk'])
+        try:
+            profile = Profile.objects.get(user=user)
+        except ObjectDoesNotExist:
+            profile = Profile(user=user)
+            profile.save()
+        context['profile'] = profile
+        return context	        
     
 class UserCreate(CreateView):
     model = User
@@ -100,7 +114,9 @@ class UserCreate(CreateView):
         valid = super(UserCreate, self).form_valid(form)
         new_user = form.save(commit=False)
         new_user.set_password(form.cleaned_data.get('password'))
-        new_user.save()  
+        new_user.save() 
+        profile = Profile(user=new_user)
+        profile.save()
         return valid
     
 class UserUpdate(SuperUserRequiredMixin, UpdateView):
@@ -147,7 +163,7 @@ class UserTeacherView(SuperUserRequiredMixin, FormView):
         return kwargs
 
 # 訊息(儀表板)
-class LineListView(LoginRequiredMixin, generic.ListView):
+class LineList(LoginRequiredMixin, generic.ListView):
     model = MessagePoll
     paginate_by = 3
     template_name = 'account/dashboard.html'
@@ -157,7 +173,7 @@ class LineListView(LoginRequiredMixin, generic.ListView):
         return messagepolls           
       
 # 列出同學以私訊
-class LineClassmateListView(LoginRequiredMixin, generic.ListView):
+class LineClassmateList(LoginRequiredMixin, generic.ListView):
     model = Enroll
     template_name = 'account/line_classmate.html'   
     
@@ -205,7 +221,7 @@ class LineCreate(LoginRequiredMixin, CreateView):
         return context	       
 
 # 訊息內容
-class LineDetailView(generic.DetailView):
+class LineDetail(generic.DetailView):
     model = Message
     template_name = "account/line_detail.html"
     
@@ -219,3 +235,53 @@ class LineDetailView(generic.DetailView):
             pass
         context['can_read'] = line_can_read(self.kwargs['pk'], self.request.user.id)      
         return context
+
+class PointList(LoginRequiredMixin, generic.ListView):
+    model = PointHistory
+    ordering = ['-id']
+    paginate_by = 3 
+    template_name = 'account/point_list.html'   
+    
+    def get_queryset(self):     
+        queryset = PointHistory.objects.filter(user_id=self.kwargs['pk']).order_by("-id")
+        return queryset
+      
+    def get_context_data(self, **kwargs):
+        context = super(PointList, self).get_context_data(**kwargs)
+        context['user_id'] = self.kwargs['pk']      
+        return context      
+      
+#新增一個問卷
+class QuestionaryCreate(LoginRequiredMixin, CreateView):
+    model = Questionary
+    form_class = QuestionaryForm
+    success_url = '/account/dashboard'    
+    template_name = 'account/questionary_form.html'     
+
+    def form_valid(self, form):
+        questionary = form.save(commit=False)      
+        questionary.user_id = self.request.user.id
+        questionary.save()          
+        return super(QuestionaryCreate, self).form_valid(form)                       
+             
+    # 限本人
+    def render_to_response(self, context):
+        if not self.request.user.id == self.kwargs['user_id']:
+            return redirect('/')
+        questionaries = Questionary.objects.filter(user_id=self.request.user.id)
+        if questionaries.exists():
+            return redirect('/account/questionary/'+str(self.request.user.id)+'/update')    
+        return super(QuestionaryCreate, self).render_to_response(context)        
+      
+    
+class QuestionaryUpdate(LoginRequiredMixin, UpdateView):
+    model = Questionary
+    form_class = QuestionaryForm
+    success_url = '/account/dashboard'    
+    template_name = 'account/questionary_form.html'     
+
+    # 限本人
+    def render_to_response(self, context):
+        if not self.request.user.id == self.kwargs['pk']:
+            return redirect('/')
+        return super(QuestionaryUpdate, self).render_to_response(context)            

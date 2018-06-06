@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block header %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock %}
+{% block content %}
+<h1>
+{{classroom.name}}班：{{enrolls|length}}位學生，共{{questionaires|length}}份問卷 
+</h1>
+ <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+      // q1
+      var data1 = google.visualization.arrayToDataTable([
+          ['選項', '次數'],        
+          ['非常同意',     {{q1.4}}],
+          ['同意',      {{q1.3}}],
+          ['不同意',  {{q1.2}}],
+          ['非常不同意', {{q1.1}}],
+        ]);
+        var options = {
+          title: "1.我很崇拜程式設計很厲害的人 (N={{questionaires|length}})"
+        };
+        var chart1 = new google.visualization.PieChart(document.getElementById('piechart1'));
+        chart1.draw(data1, options);        
+        
+        // q2
+        var data2 = google.visualization.arrayToDataTable([
+          ['選項', '次數'],        
+          ['非常同意',     {{q2.4}}],
+          ['同意',      {{q2.3}}],
+          ['不同意',  {{q2.2}}],
+          ['非常不同意', {{q2.1}}],
+        ]);
+        var options = {
+          title: "2.我對學習程式設計感到有興趣 (N={{questionaires|length}})"
+        };
+        var chart2 = new google.visualization.PieChart(document.getElementById('piechart2'));
+        chart2.draw(data2, options);        
+        
+        // q3
+        var data3 = google.visualization.arrayToDataTable([
+          ['選項', '次數'],        
+          ['非常同意',     {{q3.4}}],
+          ['同意',      {{q3.3}}],
+          ['不同意',  {{q3.2}}],
+          ['非常不同意', {{q3.1}}],
+        ]);
+        var options = {
+          title: "3.學好程式設計在現代社會是很重要的 (N={{questionaires|length}})"
+        };
+        var chart3 = new google.visualization.PieChart(document.getElementById('piechart3'));
+        chart3.draw(data3, options);        
+      }
+</script>
+    <div id="piechart1" style="width: 900px; height: 500px;"></div>
+    <div id="piechart2" style="width: 900px; height: 500px;"></div>
+    <div id="piechart3" style="width: 900px; height: 500px;"></div>
+
+    <table>
+      <tr><th>4.請列舉曾經學過的程式語言</td></tr>
+      {% for text in t1 %}
+      <tr><td>{{text}}</td></tr>
+      {% endfor %}
+    </table>
+
+    <table>
+      <tr><th>5.請簡述對本課程的期望</td></tr>
+      {% for text in t2 %}
+      <tr><td>{{text}}</td></tr>
+      {% endfor %}
+    </table>
+{% endblock %}

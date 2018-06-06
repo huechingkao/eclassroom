@@ -8,6 +8,14 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import IntegrityError
 from django.contrib.auth.mixins import LoginRequiredMixin
+from account.models import Profile, PointHistory
+from django.views.generic.base import TemplateView
+from django.shortcuts import redirect
+from account.models import Questionary
+
+# 判斷是否為本班同學
+def is_classmate(user_id, classroom_id):
+    return Enroll.objects.filter(student_id=user_id, classroom_id=classroom_id).exists()
 
 class ClassroomList(generic.ListView):
     model = Classroom
@@ -65,7 +73,7 @@ class ClassmateList(generic.ListView):
     
     def get_queryset(self):
         enrolls = Enroll.objects.filter(classroom_id=self.kwargs['pk'])
-        return enrolls    
+        return enrolls  
       
 class ClassroomSeatUpdate(UpdateView):
     model = Enroll
@@ -97,7 +105,15 @@ class AssignmentCreate(CreateView):
         work = form.save(commit=False)
         work.assignment_id = self.kwargs['assignment_id']
         work.student_id = self.request.user.id
-        work.save()
+        work.save()        
+        profile = Profile.objects.get(user=self.request.user)
+        profile.point = profile.point + 2
+        profile.save()
+        history = PointHistory()
+        history.user_id = self.request.user.id
+        title = Assignment.objects.get(id=self.kwargs['assignment_id']).title
+        history.message = "繳交作業<"+title+">--2分"
+        history.save()
         return valid
       
 class AssignmentUpdate(UpdateView):
@@ -125,4 +141,40 @@ class MemoList(generic.ListView):
         context['memos'] = memos
         return context
       
-    
+class QuestionaryView(TemplateView):
+    template_name = 'student/questionary_result.html'     
+
+    # 限本班同學
+    def render_to_response(self, context):
+        if not is_classmate(self.request.user.id, self.kwargs['classroom_id']):
+            return redirect('/')
+        return super(QuestionaryView, self).render_to_response(context)         
+      
+    def get_context_data(self, **kwargs):
+        context = super(QuestionaryView, self).get_context_data(**kwargs)
+        classroom = Classroom.objects.get(id=self.kwargs['classroom_id'])
+        enrolls = Enroll.objects.filter(classroom_id=classroom.id)
+        student_ids = map(lambda a: a.student_id, enrolls)        
+        q1 = ['q1',0,0,0,0]
+        q2 = ['q2',0,0,0,0]
+        q3 = ['q3',0,0,0,0]
+        t1 = []
+        t2 = []
+        questionaries = Questionary.objects.filter(user_id__in=student_ids)
+        for questionary in questionaries:
+            q1[questionary.q1] += 1
+            q2[questionary.q2] += 1            
+            q3[questionary.q3] += 1            
+            t1.append(questionary.t1)
+            t2.append(questionary.t2)
+        context['q1'] = q1
+        context['q2'] = q2
+        context['q3'] = q3
+        context['t1'] = t1
+        context['t2'] = t2
+        context['questionaires']  = questionaries
+        context['enrolls'] = enrolls
+        context['classroom'] = classroom
+        return context  
+      
+      

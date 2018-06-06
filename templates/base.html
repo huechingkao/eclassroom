@@ -2,12 +2,19 @@
 {% load tag %}
 <html>
 <head>
+  {% block header %}{% endblock %}
 </head>
 <body>
     <h1>線上教室</h1>
     {% if user.is_authenticated %}
     <a href="/account/dashboard">訊息</a>   
+    {% if not user.id|questionary_exists %}
+    <a href="/account/questionary/{{user.id}}/create">問卷</a>    
+    {% else %}
+    <a href="/account/questionary/{{user.id}}/update">問卷</a>      
+    {% endif %}
     <a href="/student/classroom">班級</a>  
+    <a href="/account/user/{{user.id}}">檔案</a>    
     {% if user|teacher_group %}
     <a href="/teacher/classroom">教師</a>
     {% endif %}  

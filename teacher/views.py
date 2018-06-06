@@ -11,6 +11,9 @@ from django.shortcuts import render_to_response, redirect
 from student.models import Work
 from teacher.forms import ScoreForm
 from django.urls import reverse
+from account.models import Profile, PointHistory
+from django.views.generic.base import TemplateView
+from account.models import Questionary
 
 class ClassroomList(generic.ListView):
     model = Classroom
@@ -74,7 +77,10 @@ class AnnounceCreate(LoginRequiredMixin, CreateView):
 class AssignmentList(generic.ListView):
     model = Assignment
     template_name = "teacher/assignment_list.html"
-    ordering = ['-id']   
+    
+    def get_queryset(self):     
+        queryset = Assignment.objects.filter(classroom_id=self.kwargs['classroom_id']).order_by("-id")
+        return queryset    
     
     # 限本班教師
     def render_to_response(self, context):
@@ -125,7 +131,7 @@ class ScoreList(generic.ListView):
 class ScoreUpdate(UpdateView):
     model = Work
     form_class = ScoreForm
-    template_name = "teacher/score_form.html"      
+    template_name = "teacher/score_form.html"   
     
     def get_success_url(self):       
         return "/teacher/assignment/scoring/" + str(self.kwargs['assignment_id'])
@@ -133,4 +139,38 @@ class ScoreUpdate(UpdateView):
     def get_context_data(self, **kwargs):
         context = super(ScoreUpdate, self).get_context_data(**kwargs)
         context['work'] = Work.objects.get(id=self.kwargs["pk"])
-        return context      
+        return context  
+      
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        old_work = Work.objects.get(id=self.kwargs["pk"])
+        if old_work.score == 0:
+            user = User.objects.get(id=old_work.student_id)
+            profile = Profile.objects.get(user=user)
+            profile.point = profile.point + 1
+            profile.save()
+            point = PointHistory()
+            point.user_id = old_work.student_id
+            assignment = Assignment.objects.get(id=old_work.assignment_id)
+            point.message = "作業受評<" + assignment.title + ">--1分"
+            point.save()         
+        return super(ScoreUpdate, self).form_valid(form)
+      
+class QuestionaryView(TemplateView):
+    template_name = 'teacher/questionary_result.html'  
+
+    def get_context_data(self, **kwargs):
+        context = super(QuestionaryView, self).get_context_data(**kwargs)
+        enrolls = Enroll.objects.filter(classroom_id=self.kwargs['classroom_id']).order_by("seat")
+        student_ids = list(map(lambda a: a.student_id, enrolls))
+        questionaries = Questionary.objects.filter(user_id__in=student_ids)
+        questionary_dict = dict((f.user_id, f) for f in questionaries)
+        queryset = []
+        for enroll in enrolls:
+            if enroll.student_id in questionary_dict:
+                queryset.append([enroll, questionary_dict[enroll.student_id]])
+            else :
+                queryset.append([enroll, None])
+        context['queryset'] = queryset
+        return context       
+          

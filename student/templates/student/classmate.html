@@ -6,6 +6,7 @@
 			<th>學校</th>
 			<th>帳號</th>
       <th>座號</th>        
+      <th>積分</th>     
       <th>姓名</th>
       <th>最新登入</th>
   </tr>
@@ -14,6 +15,7 @@
     <td>{{enroll.student.last_name}}</td>
     <td>{{enroll.student.username}}</td>
     <td>{{enroll.seat}}</td>
+    <td><a href="/account/point/{{enroll.student_id}}">{{enroll.student|point}}</a></td>
     <td>{{enroll.student.first_name}}</td>
     <td>{{enroll.student.last_login}}</td>
   </tr>

@@ -3,6 +3,8 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from account.models import MessagePoll
 from student.models import Work
+from account.models import Profile
+from account.models import Questionary
 
 register = template.Library()
 
@@ -50,3 +52,19 @@ def work_id(assignment_id, user_id):
         return works[0].id
     else:
         return 0
+      
+@register.filter(takes_context=True)
+def point(user):
+    try:
+        profile = Profile.objects.get(user=user)   
+        return profile.point
+    except ObjectDoesNotExist:
+        return 0
+      
+@register.filter(takes_context=True)
+def questionary_exists(user_id):
+    try: 
+        questionary = Questionary.objects.get(user_id=user_id)
+        return True
+    except ObjectDoesNotExist:
+        return False      
